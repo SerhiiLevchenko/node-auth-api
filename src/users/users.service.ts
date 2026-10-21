@@ -1,0 +1,47 @@
+import { Injectable, Inject } from '@nestjs/common';
+
+import { PrismaService } from '../prisma/prisma.service';
+
+@Injectable()
+export class UsersService {
+  constructor(
+    @Inject(PrismaService)
+    private readonly prisma: PrismaService,
+  ) {}
+
+  findByEmail(email: string) {
+    return this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+  }
+
+  findById(id: number) {
+    return this.prisma.user.findUnique({
+      where: {
+        id,
+      },
+    });
+  }
+
+  create(email: string, passwordHash: string) {
+    return this.prisma.user.create({
+      data: {
+        email,
+        passwordHash,
+      },
+    });
+  }
+
+  updateRefreshTokenHash(userId: number, refreshTokenHash: string | null) {
+    return this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        refreshTokenHash,
+      },
+    });
+  }
+}
