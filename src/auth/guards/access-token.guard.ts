@@ -7,15 +7,10 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-export type JwtPayload = {
-  sub: number;
-  email: string;
-  iat?: number;
-  exp?: number;
-};
+import type { AccessTokenPayload } from '../types/jwt-payload.type';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class AccessTokenGuard implements CanActivate {
   constructor(
     @Inject(JwtService)
     private readonly jwtService: JwtService,
@@ -26,29 +21,34 @@ export class AuthGuard implements CanActivate {
       headers: {
         authorization?: string;
       };
-      user?: JwtPayload;
+      user?: AccessTokenPayload;
     }>();
 
-    const token = this.extractToken(request.headers.authorization);
+    const token = this.extractBearerToken(request.headers.authorization);
 
     if (!token) {
       throw new UnauthorizedException('Access token is missing');
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
+      const payload =
+        await this.jwtService.verifyAsync<AccessTokenPayload>(token);
 
       request.user = payload;
+
+      return true;
     } catch {
       throw new UnauthorizedException('Access token is invalid or expired');
     }
-
-    return true;
   }
 
-  private extractToken(authorization?: string): string | undefined {
+  private extractBearerToken(authorization?: string): string | undefined {
     const [type, token] = authorization?.split(' ') ?? [];
 
-    return type === 'Bearer' ? token : undefined;
+    if (type !== 'Bearer') {
+      return undefined;
+    }
+
+    return token;
   }
 }

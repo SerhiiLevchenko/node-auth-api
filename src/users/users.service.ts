@@ -34,13 +34,34 @@ export class UsersService {
     });
   }
 
-  updateRefreshTokenHash(userId: number, refreshTokenHash: string | null) {
-    return this.prisma.user.update({
+  findPublicById(id: number) {
+    return this.prisma.user.findUnique({
       where: {
-        id: userId,
+        id,
       },
-      data: {
-        refreshTokenHash,
+
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  findAllPublic() {
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+
+      orderBy: {
+        id: 'asc',
       },
     });
   }
